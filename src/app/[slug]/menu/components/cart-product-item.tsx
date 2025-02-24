@@ -16,12 +16,13 @@ const CartProductItem = ({ product }: CartItemProps) => {
   return (
     /* ABA CARRINHO ESQUERDA */
 
-    <div className="flex items-center justify-between gap-3">
-      <div className="relative h-20 w-20 rounded-xl bg-gray-100">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+      <div className="relative h-20 w-24 rounded-xl bg-gray-100">
         <Image src={product.imageUrl} alt={product.name} fill />
       </div>
       <div className="space-y-1">
-        <p className="text-s max-w-[90%] truncate text-ellipsis">
+        <p className="text-sm max-w-[90%] truncate text-ellipsis">
           {product.name}
         </p>
         <p className="px-1 text-sm font-semibold">
@@ -45,14 +46,16 @@ const CartProductItem = ({ product }: CartItemProps) => {
           </Button>
         </div>
       </div>
+      </div>
       {/* BOTÃO DELETAR */}
       <Button
-        className="relative h-7 w-7 rounded-xl"
+        className="relative h-7 w-7 rounded-xl p-6"
         variant="outline"
         onClick={() => removeProduct(product.id)}
       >
         <TrashIcon />
       </Button>
+    
     </div>
   );
 };
