@@ -1,6 +1,5 @@
 import { useContext } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Sheet,
@@ -11,6 +10,7 @@ import {
 import { formatCurrency } from "@/helpers/format-currency";
 
 import CartProductItem from "../../components/cart-product-item";
+import FinishOrderButton from "../../components/finish-order-button";
 import { CartContext } from "../../contexts/cart";
 
 const CartSheet = () => {
@@ -32,11 +32,11 @@ const CartSheet = () => {
             <CardContent className="p-5">
               <div className="flex justify-between">
                 <p className="text-sm text-muted-foreground">Total</p>
-                <p className="font-semibold text-sm">{formatCurrency(total)}</p>
+                <p className="text-sm font-semibold">{formatCurrency(total)}</p>
               </div>
             </CardContent>
           </Card>
-          <Button className="w-full rounded-full">Finalizar Pedido</Button>
+          <FinishOrderButton />
         </div>
       </SheetContent>
     </Sheet>
