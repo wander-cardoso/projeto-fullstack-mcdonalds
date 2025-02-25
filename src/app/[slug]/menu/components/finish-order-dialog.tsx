@@ -1,7 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ConsumptionMethod } from "@prisma/client";
+import { useParams, useSearchParams } from "next/navigation";
+import { useContext } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -25,19 +29,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { isValidLegalEntityNif } from "../helpers/nif";
+import { createOrder } from "../actions/create-order";
+import { CartContext } from "../contexts/cart";
 
 const formSchema = z.object({
   name: z.string().trim().min(1, {
-    message: "O nome é obrigatório",
+    message: "O nome é obrigatório.",
   }),
-  nif: z
-    .string()
-    .trim()
-    .min(1)
-    .refine((value) => isValidLegalEntityNif(value), {
-      message: "NIF inválido.",
-    }),
+  nif: z.string().trim().min(1),
+
   email: z.string().trim().toLowerCase().email({
     message: "E-mail obrigatório",
   }),
@@ -45,7 +45,15 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-const FinishOrderButton = () => {
+interface FinishOrderDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const FinishOrderDialog = ({ open, onOpenChange }: FinishOrderDialogProps) => {
+  const { slug } = useParams<{ slug: string }>();
+  const { products } = useContext(CartContext);
+  const searchParams = useSearchParams();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,14 +63,28 @@ const FinishOrderButton = () => {
     },
     shouldUnregister: true,
   });
-
-  const onSubmit = (data: FormSchema) => {
-    console.log({ data });
+  const onSubmit = async (data: FormSchema) => {
+    try {
+      const consumptionMethod = searchParams.get(
+        "consumptionMethod",
+      ) as ConsumptionMethod;
+      await createOrder({
+        consumptionMethod,
+        customerNif: data.nif,
+        customerName: data.name,
+        products,
+        slug,
+      });
+      onOpenChange(true);
+      toast.success("Pedido finalizado com sucesso!");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     /* BOTÃO DE FINALIZAR PEDIDO */
-    <Drawer>
+    <Drawer open={open} onOpenChange={onOpenChange}>
       {/* asChild é bom aplicar pela "clean cod" para nao ficar botao dentro de botao, e somente aplicar a funcao e propriedades do de cima para o debaixo */}
       <DrawerTrigger asChild>
         <Button className="w-full rounded-full">Finalizar Pedido</Button>
@@ -148,4 +170,4 @@ const FinishOrderButton = () => {
   );
 };
 
-export default FinishOrderButton;
+export default FinishOrderDialog;
