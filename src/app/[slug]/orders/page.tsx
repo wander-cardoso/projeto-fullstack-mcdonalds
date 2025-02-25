@@ -1,6 +1,6 @@
 import { db } from "@/lib/prisma";
 
-import { isValidLegalEntityNif } from "../menu/helpers/nif";
+import { isValidNif } from "../menu/helpers/nif";
 import NifForm from "./components/nif-form";
 import OrderList from "./components/order-list";
 
@@ -14,7 +14,7 @@ const OrdersPage = async ({ searchParams }: OrdersPageProps) => {
   if (!nif) {
     return <NifForm />;
   }
-  if (!isValidLegalEntityNif(nif)) {
+  if (!isValidNif(nif)) {
     return <NifForm />;
   }
   const orders = await db.order.findMany({

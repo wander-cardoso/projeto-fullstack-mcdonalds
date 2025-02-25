@@ -1,75 +1,57 @@
 export const LEGAL_ENTITY_CONTROL_LETTERS = "JABCDEFGHI";
-export const LEGAL_ENTITY_NIF_REGEX = /^[ABCDEFGHJNPQRSUVW][\d]{7}[\dA-J]$/i;
+export const LEGAL_ENTITY_NIF_REGEX = /^[ABCDEFGHJNPQRSUVW\d][\d]{7}[\dA-J]$/i;
 const HAS_CONTROL_LETTER_REGEX = /^[PQRSW]/;
 const HAS_CONTROL_LETTER_IDENTIFIER = "00";
 const HAS_CONTROL_NUMBER_REGEX = /^[ABEH]/;
 
-function sumEvenPositions(legalEntityNumbers: string): number {
-  return (
-    +legalEntityNumbers[1] + +legalEntityNumbers[3] + +legalEntityNumbers[5]
-  );
+function sumEvenPositions(numbers: string): number {
+  return +numbers[1] + +numbers[3] + +numbers[5];
 }
 
 function calculateOddPosition(num: number): number {
   const doubledNum = num * 2;
-  if (doubledNum < 10) return doubledNum;
-
-  const splittedNum = `${doubledNum}`.split("");
-  return +splittedNum[0] + +splittedNum[1];
+  return doubledNum < 10
+    ? doubledNum
+    : Math.floor(doubledNum / 10) + (doubledNum % 10);
 }
 
-function calculateOddPositions(legalEntityNumbers: string): number {
+function calculateOddPositions(numbers: string): number {
   return (
-    calculateOddPosition(+legalEntityNumbers[0]) +
-    calculateOddPosition(+legalEntityNumbers[2]) +
-    calculateOddPosition(+legalEntityNumbers[4]) +
-    calculateOddPosition(+legalEntityNumbers[6])
+    calculateOddPosition(+numbers[0]) +
+    calculateOddPosition(+numbers[2]) +
+    calculateOddPosition(+numbers[4]) +
+    calculateOddPosition(+numbers[6])
   );
 }
 
-function getLegalEntityNumbers(legalEntityNif: string): string {
-  return legalEntityNif.slice(1, -1);
+function getLegalEntityNumbers(nif: string): string {
+  return nif.slice(1, -1);
 }
 
 function getLegalEntityNifControlNumber(nif: string): number {
-  const legalEntityNumbers = getLegalEntityNumbers(nif);
-  const keyNumber = +`${
-    sumEvenPositions(legalEntityNumbers) +
-    calculateOddPositions(legalEntityNumbers)
-  }`.slice(-1);
+  const numbers = getLegalEntityNumbers(nif);
+  const sum =
+    sumEvenPositions(numbers) + calculateOddPositions(numbers);
+  const keyNumber = sum % 10;
   return keyNumber === 0 ? keyNumber : 10 - keyNumber;
 }
 
-function isControlCodeLetter(legalEntityNif: string): boolean {
-  return (
-    HAS_CONTROL_LETTER_REGEX.test(legalEntityNif) ||
-    legalEntityNif[0] === HAS_CONTROL_LETTER_IDENTIFIER
-  );
+function isControlCodeLetter(nif: string): boolean {
+  return HAS_CONTROL_LETTER_REGEX.test(nif) || nif[0] === HAS_CONTROL_LETTER_IDENTIFIER;
 }
 
-function isControlCodeNumber(legalEntityNif: string): boolean {
-  return HAS_CONTROL_NUMBER_REGEX.test(legalEntityNif);
+function isControlCodeNumber(nif: string): boolean {
+  return HAS_CONTROL_NUMBER_REGEX.test(nif);
 }
 
-/**
- *Verifica se o código de controle nif da entidade legal (letra ou número)
- * fornecido é válido.
- *
- * @WARNING Ele não verifica o `LEGAL_ENITY_NIF_REGEX`.
- * @throws Pode gerar um erro se a string não for longa o suficiente (9 caracteres)
- * @param legalEntityNif
- * @returns
- */
-export function isValidLegalEntityNifControlCode(
-  legalEntityNif: string,
-): boolean {
-  const controlCodeToVerify = legalEntityNif.slice(-1);
-  const controlNumber = getLegalEntityNifControlNumber(legalEntityNif);
+function isValidLegalEntityNifControlCode(nif: string): boolean {
+  const controlCodeToVerify = nif.slice(-1);
+  const controlNumber = getLegalEntityNifControlNumber(nif);
 
-  if (isControlCodeLetter(legalEntityNif))
+  if (isControlCodeLetter(nif))
     return LEGAL_ENTITY_CONTROL_LETTERS[controlNumber] === controlCodeToVerify;
 
-  if (isControlCodeNumber(legalEntityNif))
+  if (isControlCodeNumber(nif))
     return controlNumber === +controlCodeToVerify;
 
   return isNaN(+controlCodeToVerify)
@@ -77,16 +59,33 @@ export function isValidLegalEntityNifControlCode(
     : controlNumber === +controlCodeToVerify;
 }
 
-/**
- * Verifica se o legalEntityNif fornecido é válido.
- *
- * Não inclui os antigos formatos K, L e M. *
- *  @param legalEntityNif
- * @returns verdadeiro para entrada válida e falso para entrada inválida.
- */
-export function isValidLegalEntityNif(legalEntityNif: string): boolean {
-  return (
-    LEGAL_ENTITY_NIF_REGEX.test(legalEntityNif) &&
-    isValidLegalEntityNifControlCode(legalEntityNif)
-  );
+// 🔹 NOVA FUNÇÃO: Cálculo do dígito de controle para NIF de pessoa singular
+function isValidPersonalNifControlCode(nif: string): boolean {
+  const numbers = nif.slice(0, 8).split("").map(Number);
+  const checkDigit = Number(nif[8]);
+
+  const sum = numbers.reduce((acc, num, index) => acc + num * (9 - index), 0);
+  const controlDigit = 11 - (sum % 11);
+
+  return controlDigit === checkDigit || (controlDigit >= 10 && checkDigit === 0);
 }
+
+/**
+ * Verifica se o NIF fornecido é válido (tanto para empresas quanto indivíduos).
+ * @param nif Número de Identificação Fiscal
+ * @returns true se for válido, false caso contrário.
+ */
+export function isValidNif(nif: string): boolean {
+  if (!LEGAL_ENTITY_NIF_REGEX.test(nif)) return false;
+
+  const firstChar = nif[0];
+
+  // Se começa com 1, 2, 3 ou 4 → NIF de Pessoa Singular
+  if (/^[1234]/.test(firstChar)) {
+    return isValidPersonalNifControlCode(nif);
+  }
+
+  // Senão, assume que é um NIF de entidade legal
+  return isValidLegalEntityNifControlCode(nif);
+}
+

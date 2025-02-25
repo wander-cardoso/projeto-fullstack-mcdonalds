@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePathname, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { PatternFormat } from "react-number-format";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -22,11 +23,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  PatternFormat,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { isValidLegalEntityNif } from "../../menu/helpers/nif";
+import { isValidNif } from "../../menu/helpers/nif";
 
 const formSchema = z.object({
   nif: z
@@ -35,7 +35,7 @@ const formSchema = z.object({
     .min(1, {
       message: "O NIF é obrigatório.",
     })
-    .refine((value) => isValidLegalEntityNif(value), {
+    .refine((value) => isValidNif(value), {
       message: "NIF inválido.",
     }),
 });
@@ -74,10 +74,9 @@ const NifForm = () => {
                   <FormLabel>Seu NIF</FormLabel>
                   <FormControl>
                     <PatternFormat
-                      placeholder="Digite seu NIF..."
+                      format="#########" placeholder="Digite seu NIF..."
                       customInput={Input}
-                      {...field}
-                    />
+                      {...field}                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

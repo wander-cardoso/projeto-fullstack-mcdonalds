@@ -61,6 +61,6 @@ export const createOrder = async (input: CreateOrderInput) => {
     });
     revalidatePath(`/${input.slug}/orders`);
     redirect(
-        `/${input.slug}/orders?nif=${input.customerNif}`,
+        `/${input.slug}/orders?nif=${(input.customerNif)}`,
     );
 };
