@@ -9,7 +9,7 @@ interface RestaurantPageProps {
   params: Promise<{ slug: string }>;
 }
 
-const RestaurantPage = async ({ params }: RestaurantPageProps) => {
+const HomePage = async ({ params }: RestaurantPageProps) => {
   const { slug } = await params;
   const restaurant = await db.restaurant.findUnique({ where: { slug } });
   if (!restaurant) {
@@ -56,4 +56,4 @@ const RestaurantPage = async ({ params }: RestaurantPageProps) => {
   );
 };
 
-export default RestaurantPage;
+export default HomePage;
