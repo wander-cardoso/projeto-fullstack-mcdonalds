@@ -1,5 +1,3 @@
-"use client"
-
 import { db } from "@/lib/prisma";
 
 const restaurant = await db.restaurant.findUnique({
