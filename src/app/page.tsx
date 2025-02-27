@@ -1,8 +1,11 @@
 "use client"
 
-import { redirect } from "next/navigation";
+import { db } from "@/lib/prisma";
 
-const HomePage = () => {
-  redirect("/fsw-donalds");
+const restaurant = await db.restaurant.findUnique({
+  where: { slug: "mcdonalds" },
+});
+
+if (!restaurant) {
+  console.error("Restaurante não encontrado!");
 }
-export default HomePage;
