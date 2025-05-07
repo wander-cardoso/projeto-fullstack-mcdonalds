@@ -4,7 +4,6 @@ import { isValidNif } from "../menu/helpers/nif";
 import NifForm from "./components/nif-form";
 import OrderList from "./components/order-list";
 
-
 interface OrdersPageProps {
   searchParams: Promise<{ nif: string }>;
 }
@@ -22,7 +21,7 @@ const OrdersPage = async ({ searchParams }: OrdersPageProps) => {
       createdAt: "desc",
     },
     where: {
-    
+      customerNif: nif,
     },
     include: {
       restaurant: {
